@@ -16,10 +16,10 @@ type Downloader interface {
 
 //Struct that contains the information about an artifact
 type Artifact struct {
-	Id         string //the artifact id
-	Href       string //Artifact address
-	Version    string //version
-	DeployPath string //relative path where to copy the artifact file
+	Id         string `xml:"id,attr"`         //the artifact id
+	Href       string `xml:"href,attr"`       //Artifact address
+	Version    string `xml:"version,attr"`    //version
+	DeployPath string `xml:"deployPath,attr"` //relative path where to copy the artifact file
 }
 
 //downloads the artifact from href

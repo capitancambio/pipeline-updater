@@ -1,17 +1,51 @@
 package updater
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 
 	"github.com/blang/semver"
 )
 
+//Artifact map type to custom unmarshal it
+type ArtifactMap map[string]Artifact
+
+//evertime a artifact is found in the xml it gets decoded using this function, it
+//unmarshals the artifact struct and stores it in the map
+func (am ArtifactMap) UnmarshalXML(e *xml.Decoder, start xml.StartElement) error {
+	a := Artifact{}
+	err := e.DecodeElement(&a, &start)
+	if err != nil {
+		return err
+	}
+	am[a.Id] = a
+	return nil
+}
+
+//Semver type to be able to custom unmarshal it
+type Version struct {
+	semver.Version
+}
+
+//Get the version string an create a semver from it
+func (v *Version) UnmarshalXMLAttr(attr xml.Attr) error {
+	str := attr.Value
+	parsed, err := semver.New(str)
+	if err != nil {
+		return err
+	}
+	v.Version = parsed
+
+	return nil
+}
+
 //Collection of artifacts
 type ReleaseDescriptor struct {
-	Href      string              //href where to get this descriptor
-	Version   semver.Version      //version of the this release
-	Artifacts map[string]Artifact //artifacts associated to this descriptor, the key is the artifact id
+	XMLName   xml.Name    `xml:"releaseDescriptor"`
+	Href      string      `xml:"href,attr"`    //href where to get this descriptor
+	Version   Version     `xml:"version,attr"` //version of the this release
+	Artifacts ArtifactMap `xml:"artifact"`     //artifacts associated to this descriptor, the key is the artifact id
 }
 
 //Create a new index
@@ -22,7 +56,7 @@ func NewReleaseDescriptor(href string, version string, artifacts ...Artifact) (r
 	}
 	rd = ReleaseDescriptor{
 		Href:      href,
-		Version:   sver,
+		Version:   Version{sver},
 		Artifacts: map[string]Artifact{},
 	}
 	for _, a := range artifacts {
@@ -35,7 +69,8 @@ func NewReleaseDescriptor(href string, version string, artifacts ...Artifact) (r
 //Compares two indeces Returning a list of differences
 func (i ReleaseDescriptor) IsDiff(old ReleaseDescriptor) (is bool, diffs DiffSet) {
 	//no changes
-	if i.Version.Equals(old.Version) {
+	if i.Version.Equals(old.Version.Version) {
+
 		return
 	}
 
