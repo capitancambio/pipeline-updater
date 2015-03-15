@@ -48,7 +48,7 @@ type ReleaseDescriptor struct {
 	Artifacts ArtifactMap `xml:"artifact"`     //artifacts associated to this descriptor, the key is the artifact id
 }
 
-//Create a new index
+//Create a new descriptor from all the info
 func NewReleaseDescriptor(href string, version string, artifacts ...Artifact) (rd ReleaseDescriptor, err error) {
 	sver, err := semver.Parse(version)
 	if err != nil {
@@ -63,6 +63,14 @@ func NewReleaseDescriptor(href string, version string, artifacts ...Artifact) (r
 		rd.Artifacts[a.Id] = a
 	}
 	return
+
+}
+
+//Create a new empty relase descriptor
+func NewEmptyReleaseDescriptor() ReleaseDescriptor {
+	return ReleaseDescriptor{
+		Artifacts: map[string]Artifact{},
+	}
 
 }
 

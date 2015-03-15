@@ -18,9 +18,7 @@ const XmlTest = `
 func TestUnmarshal(t *testing.T) {
 	Convey("Try to unmarshal a release descriptor", t, func() {
 		buf := bytes.NewBufferString(XmlTest)
-		r := ReleaseDescriptor{
-			Artifacts: ArtifactMap{},
-		}
+		r := NewEmptyReleaseDescriptor()
 		err := xml.NewDecoder(buf).Decode(&r)
 		So(err, ShouldBeNil)
 		Convey("Check that the struct has been populated", func() {
