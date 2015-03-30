@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 //Downloader contract
@@ -26,20 +27,32 @@ type Artifact struct {
 func (a Artifact) Download(w io.Writer) error {
 	//check sanity
 	if a.DeployPath == "" {
+		Error("%s no deploy path", a)
 		return fmt.Errorf("DeployPath not set")
 	}
 	if a.Href == "" {
+		Error("%s no href", a)
 		return fmt.Errorf("No Href not set")
 	}
+	Info("%s Starting download", a)
+	t := time.Now()
 	resp, err := http.Get(a.Href)
 	if err != nil {
+		Error("%s error while downloading", a)
 		return err
 	}
 	if resp.StatusCode > 300 {
+		Error("%s error while downloading", a)
 		return fmt.Errorf("Server %v returned an invalid status %d", a.Href, resp.StatusCode)
 	}
+	Info("%s downloaded in %v", a, time.Since(t))
 	_, err = io.Copy(w, resp.Body)
 	return err
+}
+
+//String for logging
+func (a Artifact) String() string {
+	return fmt.Sprintf("Artifact %v:%v", a.Id, a.Version)
 }
 
 //An artifact that is present in the local fs
@@ -50,6 +63,7 @@ type LocalArtifact struct {
 
 //Removes this copy of the artifact
 func (la LocalArtifact) Clean() error {
+	Info("%s deleting", la)
 	return os.Remove(la.Path)
 
 }
@@ -57,21 +71,27 @@ func (la LocalArtifact) Clean() error {
 //Copies the artifact having as root directory the path
 func (la LocalArtifact) Copy(path string) error {
 	absolute := filepath.Join(path, la.DeployPath)
+	Info("%s copying to %s", la, absolute)
 	os.MkdirAll(filepath.Dir(absolute), 0755)
 	out, err := os.Create(absolute)
 	if err != nil {
+		Error("%s could not create file %s", la, absolute)
 		return err
 	}
 	defer out.Close()
 	in, err := os.Open(la.Path)
 	if err != nil {
+		Error("%s could not open local file %s", la, la.Path)
 		return err
 	}
 	defer in.Close()
 	_, err = io.Copy(out, in)
-	//out.Seek(0, 0)
-	//data, err := ioutil.ReadAll(out)
-	//fmt.Printf("data %+v\n", string(data))
+	if err != nil {
+		Error("%s copying file", la)
+	} else {
+		Info("%s copied", la)
+	}
+
 	return err
 
 }

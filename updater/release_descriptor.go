@@ -135,3 +135,8 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 	}
 	return nil
 }
+
+//String for logging
+func (rd ReleaseDescriptor) String() string {
+	return fmt.Sprintf("ReleaseDescriptor %v", rd.Version.String())
+}
