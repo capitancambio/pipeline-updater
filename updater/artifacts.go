@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"archive/zip"
 	"fmt"
 	"io"
 	"log"
@@ -21,6 +22,7 @@ type Artifact struct {
 	Href       string `xml:"href,attr"`       //Artifact address
 	Version    string `xml:"version,attr"`    //version
 	DeployPath string `xml:"deployPath,attr"` //relative path where to copy the artifact file
+	Extract    bool   `xml:"extract,attr"`    //tells if the artifact should be extracted
 }
 
 //downloads the artifact from href
@@ -68,6 +70,46 @@ func (la LocalArtifact) Clean() error {
 
 }
 
+//Deploys a local artifact, it copies the file or extracts it to the given path
+//depending on whether the artifact is makred to do so
+func (la LocalArtifact) Deploy(path string) error {
+	if la.Extract {
+		return la.Unzip(path)
+	} else {
+		return la.Copy(path)
+	}
+}
+
+func (la LocalArtifact) Unzip(path string) error {
+	absolute := filepath.Join(path, la.DeployPath)
+	os.MkdirAll(filepath.Dir(absolute), 0755)
+	z, err := zip.OpenReader(la.Path)
+	if err != nil {
+		return err
+	}
+	for _, zEntry := range z.File {
+		zC, err := zEntry.Open()
+		if err != nil {
+			return err
+		}
+		defer zC.Close()
+		extrPath := filepath.Join(absolute, zEntry.Name)
+		Info("extracting %s to %s", zEntry.Name, extrPath)
+		os.MkdirAll(filepath.Dir(extrPath), 0755)
+		f, err := os.Create(extrPath)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		_, err = io.Copy(f, zC)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 //Copies the artifact having as root directory the path
 func (la LocalArtifact) Copy(path string) error {
 	absolute := filepath.Join(path, la.DeployPath)
@@ -93,7 +135,6 @@ func (la LocalArtifact) Copy(path string) error {
 	}
 
 	return err
-
 }
 
 //convienice struct for storing download results
@@ -159,7 +200,7 @@ func Remove(las []LocalArtifact) (ok bool, errs []error) {
 	}
 	return apply(las, fn)
 }
-func Copy(las []LocalArtifact, path string) (ok bool, errs []error) {
+func Deploy(las []LocalArtifact, path string) (ok bool, errs []error) {
 	fn := func(l LocalArtifact) error {
 		return l.Copy(path)
 	}

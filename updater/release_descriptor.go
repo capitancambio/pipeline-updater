@@ -113,7 +113,7 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 		//nothing to do!
 		return nil
 	}
-	toCopy, err := Download(os.TempDir(), diffSet.ToDownload()...)
+	toDeploy, err := Download(os.TempDir(), diffSet.ToDownload()...)
 	if err != nil {
 		return err
 	}
@@ -122,13 +122,13 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 		//warn
 		fmt.Printf("errs %+v\n", errs)
 	}
-	ok, errs = Copy(toCopy, installationPath)
+	ok, errs = Deploy(toDeploy, installationPath)
 	if !ok {
 		//warn
 		fmt.Printf("errs %+v\n", errs)
 	}
 	//clean up the tmp dir
-	ok, errs = Remove(toCopy)
+	ok, errs = Remove(toDeploy)
 	if !ok {
 		//warn
 		fmt.Printf("errs %+v\n", errs)

@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -230,6 +232,73 @@ func TestLocalArtifact(t *testing.T) {
 						})
 
 					})
+
+				})
+			})
+		})
+
+	})
+	Convey("Having a local artifact pointing to a zipfile", t, func() {
+		f, err := ioutil.TempFile("", "pipeline-updater")
+		So(err, ShouldBeNil)
+		z := zip.NewWriter(f)
+		//one entry
+		zw, err := z.Create("one")
+		So(err, ShouldBeNil)
+		_, err = zw.Write([]byte("one"))
+		So(err, ShouldBeNil)
+		//second entry
+		zw, err = z.Create("two")
+		So(err, ShouldBeNil)
+		_, err = zw.Write([]byte("two"))
+		So(err, ShouldBeNil)
+		err = z.Close()
+		So(err, ShouldBeNil)
+		err = f.Close()
+		So(err, ShouldBeNil)
+
+		la := LocalArtifact{
+			Artifact: Artifact{
+				Id:         "1",
+				DeployPath: "zipped",
+				Href:       "localhost.com/?id=1",
+				Extract:    true,
+			},
+			Path: f.Name(),
+		}
+		Convey("We extract the file", func() {
+			dir := os.TempDir()
+			la.Unzip(dir)
+			Convey("Walk the dir", func() {
+				files := map[string]string{}
+				err := filepath.Walk(
+					filepath.Join(dir, la.DeployPath),
+					func(path string, info os.FileInfo, err error) error {
+						if info != nil && info.IsDir() {
+							return nil
+						}
+						f, err := os.Open(path)
+						if err != nil {
+							return err
+						}
+						defer f.Close()
+						data, err := ioutil.ReadAll(f)
+						if err != nil {
+							return nil
+						}
+						files[strings.Trim(filepath.Base(path), string(filepath.Separator))] = string(data)
+
+						return nil
+					},
+				)
+				So(err, ShouldBeNil)
+				Convey("Check that the files are extracted", func() {
+					f1, ok := files["one"]
+					So(ok, ShouldBeTrue)
+					So(f1, ShouldEqual, "one")
+					f2, ok := files["two"]
+					So(ok, ShouldBeTrue)
+					So(f2, ShouldEqual, "two")
 
 				})
 			})
