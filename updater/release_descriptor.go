@@ -3,6 +3,7 @@ package updater
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/blang/semver"
@@ -120,12 +121,12 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 	ok, errs := Remove(diffSet.ToRemove(installationPath))
 	if !ok {
 		//warn
-		fmt.Printf("errs %+v\n", errs)
+		log.Printf("errs %+v\n", errs)
 	}
 	ok, errs = Deploy(toDeploy, installationPath)
 	if !ok {
 		//warn
-		fmt.Printf("errs %+v\n", errs)
+		log.Printf("errs %+v\n", errs)
 	}
 	return nil
 }

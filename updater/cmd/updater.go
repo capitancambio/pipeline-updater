@@ -7,6 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+
+	"bitbucket.org/kardianos/osext"
 
 	"github.com/capitancambio/pipeline-updater/updater"
 )
@@ -26,21 +29,35 @@ var localDescriptor = flag.String("descriptor", "", "Current descriptor")
 
 func main() {
 	flag.Parse()
+	exePath, err := osext.Executable()
+	if err != nil {
+		updater.Error(err.Error())
+		os.Exit(-1)
+	}
+	logfile, err := os.Create(filepath.Join(filepath.Dir(exePath), "log.txt"))
+	if err != nil {
+		updater.Error(err.Error())
+		os.Exit(-1)
+	}
+	log.SetOutput(logfile)
 
 	remote, err := LoadRemote(*service, *version)
 	if err != nil {
+		updater.Error(err.Error())
 		log.Println(err)
-		return
+		os.Exit(-1)
 	}
 	local, err := LoadLocal(*localDescriptor)
 	if err != nil {
+		updater.Error(err.Error())
 		log.Println(err)
-		return
+		os.Exit(-1)
 	}
 	err = remote.UpdateFrom(local, *installDir)
 	if err != nil {
+		updater.Error(err.Error())
 		log.Println(err)
-		return
+		os.Exit(-1)
 	}
 
 }
