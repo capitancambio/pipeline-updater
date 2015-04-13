@@ -25,17 +25,22 @@ var installDir = flag.String("install-dir", env, "Pipeline install directory")
 var localDescriptor = flag.String("descriptor", "", "Current descriptor")
 
 func main() {
+	flag.Parse()
+
 	remote, err := LoadRemote(*service, *version)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	local, err := LoadLocal(*localDescriptor)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	err = remote.UpdateFrom(local, *installDir)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 }

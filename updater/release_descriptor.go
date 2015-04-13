@@ -127,12 +127,6 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 		//warn
 		fmt.Printf("errs %+v\n", errs)
 	}
-	//clean up the tmp dir
-	ok, errs = Remove(toDeploy)
-	if !ok {
-		//warn
-		fmt.Printf("errs %+v\n", errs)
-	}
 	return nil
 }
 

@@ -36,7 +36,7 @@ func (a Artifact) Download(w io.Writer) error {
 		Error("%s no href", a)
 		return fmt.Errorf("No Href not set")
 	}
-	Info("%s Starting download", a)
+	Info("%s downloading from  %s", a, a.Href)
 	t := time.Now()
 	resp, err := http.Get(a.Href)
 	if err != nil {
@@ -47,14 +47,15 @@ func (a Artifact) Download(w io.Writer) error {
 		Error("%s error while downloading", a)
 		return fmt.Errorf("Server %v returned an invalid status %d", a.Href, resp.StatusCode)
 	}
-	Info("%s downloaded in %v", a, time.Since(t))
+	defer resp.Body.Close()
 	_, err = io.Copy(w, resp.Body)
+	Info("%s downloaded in %v", a, time.Since(t))
 	return err
 }
 
 //String for logging
 func (a Artifact) String() string {
-	return fmt.Sprintf("Artifact %v:%v", a.Id, a.Version)
+	return fmt.Sprintf("Artifact %v:%v :", a.Id, a.Version)
 }
 
 //An artifact that is present in the local fs
@@ -164,6 +165,7 @@ func Download(path string, as ...Artifact) ([]LocalArtifact, error) {
 			path := filepath.Join(path, a.DeployPath)
 			os.MkdirAll(filepath.Dir(path), 0755)
 			f, err := os.Create(path)
+			defer f.Close()
 			if err != nil {
 				result.err = err
 				chanArts <- result
