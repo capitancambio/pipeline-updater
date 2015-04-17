@@ -1,4 +1,4 @@
-package updater
+package main
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ func TestLogTest(t *testing.T) {
 				Version: "1.0.0",
 			}
 			Info("%s log", a)
-			So(buf.String(), ShouldEqual, "[INFO] Artifact test:1.0.0 log\n")
+			So(buf.String(), ShouldEqual, "[INFO] Artifact test:1.0.0 : log\n")
 
 		})
 		Convey("Test error for a release descriptor", func() {

@@ -1,4 +1,4 @@
-package updater
+package main
 
 import (
 	"encoding/xml"
@@ -36,7 +36,7 @@ func (v *Version) UnmarshalXMLAttr(attr xml.Attr) error {
 	if err != nil {
 		return err
 	}
-	v.Version = parsed
+	v.Version = *parsed
 
 	return nil
 }

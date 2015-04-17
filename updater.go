@@ -9,9 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"bitbucket.org/kardianos/osext"
-
-	"github.com/capitancambio/pipeline-updater/updater"
+	"github.com/kardianos/osext"
 )
 
 const (
@@ -31,38 +29,38 @@ func main() {
 	flag.Parse()
 	exePath, err := osext.Executable()
 	if err != nil {
-		updater.Error(err.Error())
+		Error(err.Error())
 		os.Exit(-1)
 	}
 	logfile, err := os.Create(filepath.Join(filepath.Dir(exePath), "log.txt"))
 	if err != nil {
-		updater.Error(err.Error())
+		Error(err.Error())
 		os.Exit(-1)
 	}
 	log.SetOutput(logfile)
 
 	remote, err := LoadRemote(*service, *version)
 	if err != nil {
-		updater.Error(err.Error())
+		Error(err.Error())
 		log.Println(err)
 		os.Exit(-1)
 	}
 	local, err := LoadLocal(*localDescriptor)
 	if err != nil {
-		updater.Error(err.Error())
+		Error(err.Error())
 		log.Println(err)
 		os.Exit(-1)
 	}
 	err = remote.UpdateFrom(local, *installDir)
 	if err != nil {
-		updater.Error(err.Error())
+		Error(err.Error())
 		log.Println(err)
 		os.Exit(-1)
 	}
 
 }
-func LoadRemote(service, version string) (rd updater.ReleaseDescriptor, err error) {
-	rd = updater.NewEmptyReleaseDescriptor()
+func LoadRemote(service, version string) (rd ReleaseDescriptor, err error) {
+	rd = NewEmptyReleaseDescriptor()
 	resp, err := http.Get(fmt.Sprintf("%s/%s", service, version))
 	if err != nil {
 		return
@@ -74,8 +72,8 @@ func LoadRemote(service, version string) (rd updater.ReleaseDescriptor, err erro
 	return
 
 }
-func LoadLocal(path string) (rd updater.ReleaseDescriptor, err error) {
-	rd = updater.NewEmptyReleaseDescriptor()
+func LoadLocal(path string) (rd ReleaseDescriptor, err error) {
+	rd = NewEmptyReleaseDescriptor()
 	if path == "" {
 		return
 	}
