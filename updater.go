@@ -24,6 +24,7 @@ var service = flag.String("service", "http://defaultservice.com", "Url of the up
 var version = flag.String("version", Latest, "Version to update to")
 var installDir = flag.String("install-dir", env, "Pipeline install directory")
 var localDescriptor = flag.String("descriptor", "", "Current descriptor")
+var force = flag.Bool("force", false, "Forces to update without comparing the versions, use if updating to nightly builds")
 
 func main() {
 	flag.Parse()
@@ -45,7 +46,7 @@ func main() {
 		log.Println(err)
 		os.Exit(-1)
 	}
-	local, err := LoadLocal(*localDescriptor)
+	local, err := LoadLocal(*localDescriptor, *force)
 	if err != nil {
 		Error(err.Error())
 		log.Println(err)
@@ -72,9 +73,9 @@ func LoadRemote(service, version string) (rd ReleaseDescriptor, err error) {
 	return
 
 }
-func LoadLocal(path string) (rd ReleaseDescriptor, err error) {
+func LoadLocal(path string, force bool) (rd ReleaseDescriptor, err error) {
 	rd = NewEmptyReleaseDescriptor()
-	if path == "" {
+	if force || path == "" {
 		return
 	}
 	f, err := os.Open(path)

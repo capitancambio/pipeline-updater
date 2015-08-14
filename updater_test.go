@@ -52,12 +52,17 @@ func TestLoadRemote(t *testing.T) {
 func TestLoadLocal(t *testing.T) {
 	Convey("Test loading the local desciptor", t, func() {
 		Convey("If no local descriptor is indicated return an empty descriptor", func() {
-			rd, err := LoadLocal("")
+			rd, err := LoadLocal("", false)
+			So(err, ShouldBeNil)
+			So(rd.Version.String(), ShouldEqual, "0.0.0")
+		})
+		Convey("If forced update return empty descriptor", func() {
+			rd, err := LoadLocal("", false)
 			So(err, ShouldBeNil)
 			So(rd.Version.String(), ShouldEqual, "0.0.0")
 		})
 		Convey("Errors are propagated", func() {
-			_, err := LoadLocal("lkjaslkjaslkjasdl")
+			_, err := LoadLocal("lkjaslkjaslkjasdl", false)
 			So(err, ShouldNotBeNil)
 		})
 		Convey("it loads the release descriptor from a file", func() {
@@ -66,7 +71,7 @@ func TestLoadLocal(t *testing.T) {
 			ft.WriteString(XmlTest)
 			err = ft.Close()
 			So(err, ShouldBeNil)
-			rd, err := LoadLocal(ft.Name())
+			rd, err := LoadLocal(ft.Name(), false)
 			So(err, ShouldBeNil)
 			Convey("Check the remote rd", func() {
 				So(rd.Version.String(), ShouldEqual, "1.0.0")
