@@ -9,7 +9,7 @@
     <fileSet>
       <directory>build/bin/${item}</directory>
       <includes>
-        <include>updater*</include>
+        <include>pipeline-updater*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <fileMode>0755</fileMode>
