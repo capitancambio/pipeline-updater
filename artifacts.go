@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -18,11 +19,12 @@ type Downloader interface {
 
 //Struct that contains the information about an artifact
 type Artifact struct {
-	Id         string `xml:"id,attr"`         //the artifact id
-	Href       string `xml:"href,attr"`       //Artifact address
-	Version    string `xml:"version,attr"`    //version
-	DeployPath string `xml:"deployPath,attr"` //relative path where to copy the artifact file
-	Extract    bool   `xml:"extract,attr"`    //tells if the artifact should be extracted
+	XMLName    xml.Name `xml:"artifact"`
+	Id         string   `xml:"id,attr"`         //the artifact id
+	Href       string   `xml:"href,attr"`       //Artifact address
+	Version    string   `xml:"version,attr"`    //version
+	DeployPath string   `xml:"deployPath,attr"` //relative path where to copy the artifact file
+	Extract    bool     `xml:"extract,attr"`    //tells if the artifact should be extracted
 }
 
 //downloads the artifact from href

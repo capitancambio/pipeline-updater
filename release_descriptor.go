@@ -23,6 +23,16 @@ func (am ArtifactMap) UnmarshalXML(e *xml.Decoder, start xml.StartElement) error
 	am[a.Id] = a
 	return nil
 }
+func (am ArtifactMap) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+
+	for _, a := range am {
+		err := e.Encode(a)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 //Semver type to be able to custom unmarshal it
 type Version struct {
@@ -41,12 +51,18 @@ func (v *Version) UnmarshalXMLAttr(attr xml.Attr) error {
 	return nil
 }
 
+//Get the version string an create a semver from it
+func (v Version) MarshalXMLAttr(name xml.Name) (xml.Attr, error) {
+	return xml.Attr{Name: name, Value: v.String()}, nil
+}
+
 //Collection of artifacts
 type ReleaseDescriptor struct {
 	XMLName   xml.Name    `xml:"releaseDescriptor"`
 	Href      string      `xml:"href,attr"`    //href where to get this descriptor
 	Version   Version     `xml:"version,attr"` //version of the this release
 	Artifacts ArtifactMap `xml:"artifact"`     //artifacts associated to this descriptor, the key is the artifact id
+	Time      string      `xml:"time"`         //timestamp of the desciptor generation
 }
 
 //Create a new descriptor from all the info
@@ -134,4 +150,15 @@ func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath 
 //String for logging
 func (rd ReleaseDescriptor) String() string {
 	return fmt.Sprintf("ReleaseDescriptor %v", rd.Version.String())
+}
+
+func (rd ReleaseDescriptor) Save(path string) error {
+	data, err := xml.Marshal(rd)
+	f, err := os.Create(path)
+	defer f.Close()
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(data)
+	return err
 }

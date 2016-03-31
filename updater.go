@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/kardianos/osext"
 )
@@ -58,7 +59,17 @@ func main() {
 		log.Println(err)
 		os.Exit(-1)
 	}
+	if err := Backup(*localDescriptor); err != nil {
+		Error(err.Error())
+		log.Println(err)
+		os.Exit(-1)
+	}
 
+	if err := remote.Save(*localDescriptor); err != nil {
+		Error(err.Error())
+		log.Println(err)
+		os.Exit(-1)
+	}
 }
 func LoadRemote(service, version string) (rd ReleaseDescriptor, err error) {
 	rd = NewEmptyReleaseDescriptor()
@@ -86,4 +97,8 @@ func LoadLocal(path string, force bool) (rd ReleaseDescriptor, err error) {
 	err = xml.NewDecoder(f).Decode(&rd)
 	return
 
+}
+
+func Backup(path string) error {
+	return os.Rename(path, fmt.Sprintf("%s_%s", path, time.Now().Format("200601021504050.000")))
 }
