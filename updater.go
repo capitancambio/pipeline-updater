@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	Latest = "latest"
+	Latest = "current"
 )
 
 var (
