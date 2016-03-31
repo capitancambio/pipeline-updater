@@ -169,6 +169,7 @@ func Download(path string, as ...Artifact) ([]LocalArtifact, error) {
 			if err != nil {
 				result.err = err
 				chanArts <- result
+				return
 			}
 			log.Println("Downloading ", a.Id, "to", path)
 			//download file
