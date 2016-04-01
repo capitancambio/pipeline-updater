@@ -127,6 +127,7 @@ func (i ReleaseDescriptor) IsDiff(old ReleaseDescriptor) (is bool, diffs DiffSet
 func (r ReleaseDescriptor) UpdateFrom(local ReleaseDescriptor, installationPath string) error {
 	changes, diffSet := r.IsDiff(local)
 	if !changes {
+		Info("There are no new versions")
 		//nothing to do!
 		return nil
 	}
