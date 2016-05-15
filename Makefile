@@ -50,7 +50,7 @@ dist: build-setup test
 	@${GO} get github.com/mitchellh/gox
 	#@${GOX} -build-toolchain \
 		#-osarch="linux/amd64 linux/386 darwin/386 darwin/amd64 windows/386 windows/amd64"
-	@${GOX} -output="${GOPATH}/bin/{{.OS}}_{{.Arch}}/{{.Dir}}" \
+	@${GOX} -output="${GOPATH}/bin/{{.OS}}_{{.Arch}}/pipeline-updater" \
 	        -osarch="linux/amd64 linux/386 darwin/386 darwin/amd64 windows/386 windows/amd64" \
 	        
 
