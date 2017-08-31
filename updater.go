@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	Latest = "current"
+	Latest = "latest"
 )
 
 var (
